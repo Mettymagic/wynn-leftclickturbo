@@ -1,4 +1,5 @@
 const keybind = "key.wynncraft-spell-caster.spell.melee"
+const SPELL_CLICK_PROTECTION = 4 //0.2s
 
 var TURBO_ON = ""
 var TO_ATTACK = false
@@ -16,21 +17,33 @@ function isCasting() {
 }
 
 
+var clickProt = SPELL_CLICK_PROTECTION 
 //cancel right click while running
 JsMacros.on('Key', true, JavaWrapper.methodToJava((event, context) => {
 	if (event.action == 1 && (event.key == "key.mouse.right" || event.key == "key.mouse.left")) {
 		var id = Player.getPlayer().getMainHand().getItemId()
-		if(event.key == "key.mouse.left" && (id == "minecraft:shears" || id == "minecraft:stick" || id == "minecraft:stone_shovel" || id == "minecraft:iron_shovel" || id == "minecraft:wooden_shovel")) {
-			event.cancel()
-			KeyBind.pressKeyBind(keybind)
-			TURBO_ON = "left"
-			TO_ATTACK = true
+		if(id == "minecraft:shears" || id == "minecraft:stick" || id == "minecraft:stone_shovel" || id == "minecraft:iron_shovel" || id == "minecraft:wooden_shovel") {
+			if(event.key  == "key.mouse.left") {
+				event.cancel()
+				KeyBind.pressKeyBind(keybind)
+				TURBO_ON = "left"
+				TO_ATTACK = true
+				console.log(getOverlayText())
+			}
+			else {
+				clickProt = SPELL_CLICK_PROTECTION 
+			}
 		}
-		else if(event.key == "key.mouse.right" && id == "minecraft:bow") {
-			event.cancel()
-			KeyBind.pressKeyBind(keybind)
-			TURBO_ON = "right"
-			TO_ATTACK = true
+		else if(id == "minecraft:bow") {
+			if(event.key == "key.mouse.right") {
+				event.cancel()
+				KeyBind.pressKeyBind(keybind)
+				TURBO_ON = "right"
+				TO_ATTACK = true
+			}
+			else {
+				clickProt = SPELL_CLICK_PROTECTION 
+			}
 		}
 	}
 	//cancel
@@ -68,7 +81,7 @@ while (true) {
 			if(cd != -1) {
 				TO_ATTACK = true
 			}
-			else if(cd == -1 && TO_ATTACK && !isCasting()) {
+			else if(cd == -1 && TO_ATTACK && !isCasting() && clickProt <= 0) {
 				KeyBind.pressKeyBind(keybind)
 				TO_ATTACK = false
 				to_attack_timer = item_cd
@@ -80,7 +93,7 @@ while (true) {
 				}
 			}
 		}
-		else if(id == "minecraft:bow" && !isCasting()) {
+		else if(id == "minecraft:bow" && !isCasting() && clickProt <= 0) {
 			KeyBind.pressKeyBind(keybind)
 			Client.waitTick(2)
 		}
@@ -88,5 +101,6 @@ while (true) {
 	else {
 		to_attack_timer = -1
 	}
+	if(clickProt > 0) clickProt--
     Client.waitTick(1)
 }
