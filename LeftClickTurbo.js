@@ -80,7 +80,7 @@ while (true) {
 				}
 			}
 		}
-		else if(id == "minecraft:bow") {
+		else if(id == "minecraft:bow" && !isCasting()) {
 			KeyBind.pressKeyBind(keybind)
 			Client.waitTick(2)
 		}
